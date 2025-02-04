@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 import os
-import dask.dataframe as dd
 
 # Set the app to use the full screen width
 st.set_page_config(layout="wide")
@@ -12,14 +11,6 @@ def load_data(csv_path):
         st.error(f"CSV file not found: {csv_path}")
         return pd.DataFrame()
     return pd.read_csv(csv_path)
-
-@st.cache_data
-def load_mp_expenses(csv_path):
-    if not os.path.exists(csv_path):
-        st.error(f"CSV file not found: {csv_path}")
-        return None
-    # Load the large CSV using Dask
-    return dd.read_csv(csv_path)
 
 def main():
     st.title("MP Spending Dashboard")
@@ -65,39 +56,37 @@ def main():
     elif view_option == "MP Expenses":
         st.header("MP Software Expenses, 2023-2024")
         mp_csv_path = "Top MP Office Claims for Software & Applications, 2024.csv"
-        df_dask = load_mp_expenses(mp_csv_path)
         
-        if df_dask is None:
+        with st.spinner("Loading MP Expenses data..."):
+            df = load_data(mp_csv_path)
+        
+        if df.empty:
             st.write("No data available.")
         else:
-            # Provide a slider to choose how many rows to preview from the large dataset
+            # Provide a slider to choose how many rows to preview
             rows_to_display = st.slider("Number of rows to preview", 10, 1000, 100)
             
-            with st.spinner("Loading MP Expenses data..."):
-                # Load a preview of the data; note that dd.head() returns a pandas DataFrame
-                df_preview = df_dask.head(rows_to_display)
+            # Get preview of the data
+            df_preview = df.head(rows_to_display)
             
-            # Optionally, apply custom styling to the preview
+            # Apply styling to the preview
             styler = df_preview.style.set_properties(**{
                 'text-align': 'left',
                 'white-space': 'nowrap'
-            }).set_table_styles(
-                [
-                    {'selector': 'th', 'props': [
-                        ('background-color', '#e0e0e0'),
-                        ('color', '#000'),
-                        ('text-align', 'left'),
-                        ('padding', '8px')
-                    ]},
-                    {'selector': 'td', 'props': [
-                        ('padding', '8px')
-                    ]}
-                ]
-            )
+            }).set_table_styles([
+                {'selector': 'th', 'props': [
+                    ('background-color', '#e0e0e0'),
+                    ('color', '#000'),
+                    ('text-align', 'left'),
+                    ('padding', '8px')
+                ]},
+                {'selector': 'td', 'props': [
+                    ('padding', '8px')
+                ]}
+            ])
             
             st.dataframe(styler, use_container_width=True)
-            st.write(f"Previewing the first {rows_to_display} rows of the MP Expenses dataset. "
-                     "The full dataset is large and is loaded with Dask for efficiency.")
+            st.write(f"Previewing the first {rows_to_display} rows of the MP Expenses dataset.")
     
     elif view_option == "MP Office Expense Claims by Year":
         st.header("MP Office Expense Claims by Year")
