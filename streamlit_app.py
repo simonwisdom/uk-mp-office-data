@@ -63,14 +63,8 @@ def main():
         if df.empty:
             st.write("No data available.")
         else:
-            # Provide a slider to choose how many rows to preview
-            rows_to_display = st.slider("Number of rows to preview", 10, 1000, 100)
-            
-            # Get preview of the data
-            df_preview = df.head(rows_to_display)
-            
-            # Apply styling to the preview
-            styler = df_preview.style.set_properties(**{
+            # Apply styling
+            styler = df.style.set_properties(**{
                 'text-align': 'left',
                 'white-space': 'nowrap'
             }).set_table_styles([
@@ -86,7 +80,6 @@ def main():
             ])
             
             st.dataframe(styler, use_container_width=True)
-            st.write(f"Previewing the first {rows_to_display} rows of the MP Expenses dataset.")
     
     elif view_option == "MP Office Expense Claims by Year":
         st.header("MP Office Expense Claims by Year")
@@ -108,9 +101,8 @@ def main():
                 if df.empty:
                     st.write("No data available in the selected file.")
                 else:
-                    rows_to_display = st.slider("Number of rows to preview", 10, 1000, 100)
-                    # Apply custom styling to the preview.
-                    styler = df.head(rows_to_display).style.set_properties(**{
+                    # Apply custom styling
+                    styler = df.style.set_properties(**{
                         'text-align': 'left',
                         'white-space': 'nowrap'
                     }).set_table_styles(
@@ -128,7 +120,6 @@ def main():
                     )
                     
                     st.dataframe(styler, use_container_width=True)
-                    st.write(f"Previewing the first {rows_to_display} rows from {selected_file}.")
 
 if __name__ == "__main__":
     main()
